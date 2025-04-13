@@ -2,7 +2,7 @@
   "name": "vscode-stattrack",
   "displayName": "StatTrack",
   "description": "Metrics, insights, and time tracking automatically generated from your programming activity.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "MohitDev",
   "author": {
     "name": "Mohit"
