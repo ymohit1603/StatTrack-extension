@@ -1,0 +1,157 @@
+{
+  "name": "vscode-stattrack",
+  "displayName": "StatTrack",
+  "description": "Metrics, insights, and time tracking automatically generated from your programming activity.",
+  "version": "25.0.0",
+  "publisher": "StatTrack",
+  "author": {
+    "name": "Mohit"
+  },
+  "categories": [
+    "Visualization",
+    "Education"
+  ],
+  "keywords": [
+    "analytics",
+    "code",
+    "code time",
+    "codetime",
+    "flow",
+    "focus",
+    "metrics",
+    "productivity",
+    "slack",
+    "standup",
+    "time",
+    "timer",
+    "time tracker",
+    "time tracking",
+    "todo",
+    "tracker",
+    "tracking",
+    "worktime",
+    "stattrack",
+    "wakatime"
+  ],
+  "homepage": "https://stattrack.com/",
+  "bugs": {
+    "url": "https://github.com/ymohit1603/vscode-stattrack/issues",
+    "email": "stattrack@gmail.com"
+  },
+  "license": "BSD-3-Clause",
+  "icon": "images/stattrack-logo.png",
+  "galleryBanner": {
+    "color": "#AEC3D8",
+    "theme": "light"
+  },
+  "extensionKind": [
+    "workspace"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ymohit1603/vscode-stattrack.git"
+  },
+  "engines": {
+    "vscode": "^1.59.0",
+    "sqlops": "*",
+    "azdata": "*"
+  },
+  "main": "./dist/extension",
+  "browser": "./dist/web/extension",
+  "scripts": {
+    "vscode:prepublish": "webpack --mode production",
+    "compile": "webpack --mode none",
+    "compile:dev": "tsc -p ./",
+    "watch": "webpack --mode none --watch",
+    "open-in-browser": "vscode-test-web --open-devtools --quality insiders --extensionDevelopmentPath=. .",
+    "publish:web": "npx ovsx publish",
+    "test": "npm run compile:dev && node ./node_modules/vscode/bin/test"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "wakatime.apikey",
+        "title": "StatTrack: Api Key"
+      },
+      {
+        "command": "wakatime.apiurl",
+        "title": "StatTrack: Api Url"
+      },
+      {
+        "command": "wakatime.proxy",
+        "title": "StatTrack: Proxy"
+      },
+      {
+        "command": "wakatime.debug",
+        "title": "StatTrack: Debug"
+      },
+      {
+        "command": "wakatime.disable",
+        "title": "StatTrack: Disable/Enable Extension"
+      },
+      {
+        "command": "wakatime.status_bar_enabled",
+        "title": "StatTrack: Status Bar Enabled"
+      },
+      {
+        "command": "wakatime.status_bar_coding_activity",
+        "title": "StatTrack: Status Bar Coding Activity"
+      },
+      {
+        "command": "wakatime.dashboard",
+        "title": "StatTrack: Open Dashboard"
+      },
+      {
+        "command": "wakatime.config_file",
+        "title": "StatTrack: Open Config File..."
+      },
+      {
+        "command": "wakatime.log_file",
+        "title": "StatTrack: Open Log File..."
+      }
+    ],
+    "configuration": {
+      "title": "StatTrack",
+      "properties": {
+        "wakatime.apiKey": {
+          "type": "string",
+          "description": "Defaults to value from ~/.stattrack.cfg, unless running in browser.",
+          "scope": "application"
+        },
+        "wakatime.apiUrl": {
+          "type": "string",
+          "description": "Defaults to http://localhost:3000/api/v1",
+          "scope": "application"
+        }
+      }
+    }
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.4.34",
+    "@types/azdata": "^1.35.0",
+    "@types/mocha": "^9.1.0",
+    "@types/node": "^17.0.21",
+    "@types/request": "^2.48.8",
+    "@types/semver": "^7.5.8",
+    "@types/vscode": "^1.59.0",
+    "@types/webpack": "^5.28.0",
+    "@types/which": "^2.0.1",
+    "@vscode/test-web": "^0.0.22",
+    "adm-zip": "0.5.9",
+    "azdata": "^1.0.0",
+    "del-cli": "^4.0.1",
+    "original-fs": "^1.1.0",
+    "prettier": "2.6.0",
+    "request": "2.88.2",
+    "semver": "^7.6.3",
+    "ts-loader": "^9.2.8",
+    "tslib": "^2.3.1",
+    "typescript": "^4.6.2",
+    "webpack": "^5.70.0",
+    "webpack-cli": "^4.9.2",
+    "which": "^2.0.2"
+  }
+}
