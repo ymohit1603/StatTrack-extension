@@ -235,7 +235,7 @@ export class Options {
       this.logger.debug(`Exception while reading API Key from config file: ${err}`);
       if (`${err}`.includes('spawn EPERM')) {
         vscode.window.showErrorMessage(
-          'Microsoft Defender is blocking WakaTime. Please allow WakaTime to run so it can upload code stats to your dashboard.',
+          'Microsoft Defender is blocking StatTrack. Please allow StatTrack to run so it can upload code stats to your dashboard.',
         );
       }
       return '';

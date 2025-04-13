@@ -31,7 +31,9 @@
     "tracking",
     "worktime",
     "stattrack",
-    "wakatime"
+    "wakatime",
+    "codetime",
+    "cracked.dev"
   ],
   "homepage": "https://stattrack.com/",
   "bugs": {

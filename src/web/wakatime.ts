@@ -75,14 +75,14 @@ export class WakaTime {
   }
 
   public initializeDependencies(): void {
-    this.logger.debug(`Initializing WakaTime v${this.extension.version}`);
+    this.logger.debug(`Initializing StatTrack v${this.extension.version}`);
 
     this.statusBar = vscode.window.createStatusBarItem(
       'com.wakatime.statusbar',
       vscode.StatusBarAlignment.Left,
       3,
     );
-    this.statusBar.name = 'WakaTime';
+    this.statusBar.name = 'StatTrack';
     this.statusBar.command = COMMAND_DASHBOARD;
 
     this.statusBarTeamYou = vscode.window.createStatusBarItem(
@@ -90,14 +90,14 @@ export class WakaTime {
       vscode.StatusBarAlignment.Left,
       2,
     );
-    this.statusBarTeamYou.name = 'WakaTime Top dev';
+    this.statusBarTeamYou.name = 'StatTrack Top dev';
 
     this.statusBarTeamOther = vscode.window.createStatusBarItem(
       'com.wakatime.teamother',
       vscode.StatusBarAlignment.Left,
       1,
     );
-    this.statusBarTeamOther.name = 'WakaTime Team Total';
+    this.statusBarTeamOther.name = 'StatTrack Team Total';
 
     const showStatusBar = this.config.get('wakatime.status_bar_enabled');
     this.showStatusBar = showStatusBar !== 'false';
@@ -106,19 +106,19 @@ export class WakaTime {
     this.showStatusBarTeam = showStatusBarTeam !== 'false';
 
     this.setStatusBarVisibility(this.showStatusBar);
-    this.updateStatusBarText('WakaTime Initializing...');
+    this.updateStatusBarText('StatTrack Initializing...');
 
     this.checkApiKey();
 
     this.setupEventListeners();
 
-    this.logger.debug('WakaTime initialized.');
+    this.logger.debug('StatTrack initialized.');
 
     const showCodingActivity = this.config.get('wakatime.status_bar_coding_activity');
     this.showCodingActivity = showCodingActivity !== 'false';
 
     this.updateStatusBarText();
-    this.updateStatusBarTooltip('WakaTime: Initialized');
+    this.updateStatusBarTooltip('StatTrack: Initialized');
     this.getCodingActivity();
   }
 
@@ -192,7 +192,7 @@ export class WakaTime {
   public promptForApiUrl(): void {
     const defaultVal: string = this.config.get('wakatime.apiUrl') || '';
     let promptOptions = {
-      prompt: 'WakaTime Api Url',
+      prompt: 'StatTrack Api Url',
       placeHolder: '',
       value: defaultVal,
       ignoreFocusOut: true,
@@ -514,10 +514,10 @@ export class WakaTime {
       } else {
         this.logger.warn(`API Error ${response.status}: ${parsedJSON}`);
         if (response && response.status == 401) {
-          let error_msg = 'Invalid WakaTime Api Key';
+          let error_msg = 'Invalid StatTrack Api Key';
           if (this.showStatusBar) {
-            this.updateStatusBarText('WakaTime Error');
-            this.updateStatusBarTooltip(`WakaTime: ${error_msg}`);
+            this.updateStatusBarText('StatTrack Error');
+            this.updateStatusBarTooltip(`StatTrack: ${error_msg}`);
           }
           this.logger.error(error_msg);
           let now: number = Date.now();
@@ -529,8 +529,8 @@ export class WakaTime {
         } else {
           let error_msg = `Error sending heartbeat (${response.status}); Check your browser console for more details.`;
           if (this.showStatusBar) {
-            this.updateStatusBarText('WakaTime Error');
-            this.updateStatusBarTooltip(`WakaTime: ${error_msg}`);
+            this.updateStatusBarText('StatTrack Error');
+            this.updateStatusBarTooltip(`StatTrack: ${error_msg}`);
           }
           this.logger.error(error_msg);
         }
@@ -539,8 +539,8 @@ export class WakaTime {
       this.logger.warn(`API Error: ${ex}`);
       let error_msg = `Error sending heartbeat; Check your browser console for more details.`;
       if (this.showStatusBar) {
-        this.updateStatusBarText('WakaTime Error');
-        this.updateStatusBarTooltip(`WakaTime: ${error_msg}`);
+        this.updateStatusBarText('StatTrack Error');
+        this.updateStatusBarTooltip(`StatTrack: ${error_msg}`);
       }
       this.logger.error(error_msg);
     }
@@ -590,7 +590,7 @@ export class WakaTime {
             if (this.showCodingActivity) {
               this.updateStatusBarText(output.trim());
               this.updateStatusBarTooltip(
-                'WakaTime: Today’s coding time. Click to visit dashboard.',
+                'StatTrack: Today’s coding time. Click to visit dashboard.',
               );
             } else {
               this.updateStatusBarText();
@@ -598,17 +598,17 @@ export class WakaTime {
             }
           } else {
             this.updateStatusBarText();
-            this.updateStatusBarTooltip('WakaTime: Calculating time spent today in background...');
+            this.updateStatusBarTooltip('StatTrack: Calculating time spent today in background...');
           }
           this.updateTeamStatusBar();
         }
       } else {
         this.logger.warn(`API Error ${response.status}: ${parsedJSON}`);
         if (response && response.status == 401) {
-          let error_msg = 'Invalid WakaTime Api Key';
+          let error_msg = 'Invalid StatTrack Api Key';
           if (this.showStatusBar) {
-            this.updateStatusBarText('WakaTime Error');
-            this.updateStatusBarTooltip(`WakaTime: ${error_msg}`);
+            this.updateStatusBarText('StatTrack Error');
+            this.updateStatusBarTooltip(`StatTrack: ${error_msg}`);
           }
           this.logger.error(error_msg);
         } else {
@@ -706,7 +706,7 @@ export class WakaTime {
         this.updateTeamStatusBarTextForOther();
         this.logger.warn(`API Error ${response.status}: ${parsedJSON}`);
         if (response && response.status == 401) {
-          this.logger.error('Invalid WakaTime Api Key');
+          this.logger.error('Invalid StatTrack Api Key');
         } else {
           let error_msg = `Error fetching devs for currently focused file (${response.status}); Check your browser console for more details.`;
           this.logger.debug(error_msg);
