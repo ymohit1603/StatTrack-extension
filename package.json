@@ -2,8 +2,8 @@
   "name": "vscode-stattrack",
   "displayName": "StatTrack",
   "description": "Metrics, insights, and time tracking automatically generated from your programming activity.",
-  "version": "25.0.0",
-  "publisher": "StatTrack",
+  "version": "0.0.1",
+  "publisher": "MohitDev",
   "author": {
     "name": "Mohit"
   },
@@ -41,7 +41,7 @@
     "email": "stattrack@gmail.com"
   },
   "license": "BSD-3-Clause",
-  "icon": "images/stattrack-logo.png",
+  "icon": "/images/stattrack-logo.jpg",
   "galleryBanner": {
     "color": "#AEC3D8",
     "theme": "light"
@@ -81,39 +81,8 @@
       {
         "command": "wakatime.apiurl",
         "title": "StatTrack: Api Url"
-      },
-      {
-        "command": "wakatime.proxy",
-        "title": "StatTrack: Proxy"
-      },
-      {
-        "command": "wakatime.debug",
-        "title": "StatTrack: Debug"
-      },
-      {
-        "command": "wakatime.disable",
-        "title": "StatTrack: Disable/Enable Extension"
-      },
-      {
-        "command": "wakatime.status_bar_enabled",
-        "title": "StatTrack: Status Bar Enabled"
-      },
-      {
-        "command": "wakatime.status_bar_coding_activity",
-        "title": "StatTrack: Status Bar Coding Activity"
-      },
-      {
-        "command": "wakatime.dashboard",
-        "title": "StatTrack: Open Dashboard"
-      },
-      {
-        "command": "wakatime.config_file",
-        "title": "StatTrack: Open Config File..."
-      },
-      {
-        "command": "wakatime.log_file",
-        "title": "StatTrack: Open Log File..."
       }
+      
     ],
     "configuration": {
       "title": "StatTrack",
@@ -157,3 +126,5 @@
     "which": "^2.0.2"
   }
 }
+
+

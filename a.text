@@ -1,0 +1,32 @@
+{
+        "command": "wakatime.proxy",
+        "title": "StatTrack: Proxy"
+      },
+      {
+        "command": "wakatime.debug",
+        "title": "StatTrack: Debug"
+      },
+      {
+        "command": "wakatime.disable",
+        "title": "StatTrack: Disable/Enable Extension"
+      },
+      {
+        "command": "wakatime.status_bar_enabled",
+        "title": "StatTrack: Status Bar Enabled"
+      },
+      {
+        "command": "wakatime.status_bar_coding_activity",
+        "title": "StatTrack: Status Bar Coding Activity"
+      },
+      {
+        "command": "wakatime.dashboard",
+        "title": "StatTrack: Open Dashboard"
+      },
+      {
+        "command": "wakatime.config_file",
+        "title": "StatTrack: Open Config File..."
+      },
+      {
+        "command": "wakatime.log_file",
+        "title": "StatTrack: Open Log File..."
+      }
