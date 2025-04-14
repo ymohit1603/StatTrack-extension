@@ -2,7 +2,7 @@
   "name": "vscode-stattrack",
   "displayName": "StatTrack",
   "description": "Metrics, insights, and time tracking automatically generated from your programming activity.",
-  "version": "0.0.2",
+  "version": "0.0.32",
   "publisher": "MohitDev",
   "author": {
     "name": "Mohit"
@@ -34,13 +34,27 @@
     "wakatime",
     "codetime",
     "cracked.dev"
-  ],
+  ],  "configuration": {
+    "title": "StatTrack",
+    "properties": {
+      "wakatime.apiKey": {
+        "type": "string",
+        "description": "Defaults to value from ~/.stattrack.cfg, unless running in browser.",
+        "scope": "application"
+      },
+      "wakatime.apiUrl": {
+        "type": "string",
+        "description": "Defaults to http://localhost:3000/api/v1",
+        "scope": "application"
+      }
+    }
+  },
   "homepage": "https://stattrack.com/",
   "bugs": {
     "url": "https://github.com/ymohit1603/vscode-stattrack/issues",
     "email": "stattrack@gmail.com"
   },
-  "license": "BSD-3-Clause",
+  "license": "",
   "icon": "/images/stattrack-logo.jpg",
   "galleryBanner": {
     "color": "#AEC3D8",
@@ -61,6 +75,19 @@
     "sqlops": "*",
     "azdata": "*"
   },
+  "contributes": {
+  "commands": [
+      {
+        "command": "wakatime.apikey",
+        "title": "StatTrack: Api Key"
+      },
+      {
+        "command": "wakatime.apiurl",
+        "title": "StatTrack: Api Url"
+      }
+    ]
+  }
+  ,
   "main": "./dist/extension",
   "browser": "./dist/web/extension",
   "scripts": {
@@ -71,35 +98,8 @@
     "open-in-browser": "vscode-test-web --open-devtools --quality insiders --extensionDevelopmentPath=. .",
     "publish:web": "npx ovsx publish",
     "test": "npm run compile:dev && node ./node_modules/vscode/bin/test"
-  },
-  "contributes": {
-    "commands": [
-      {
-        "command": "wakatime.apikey",
-        "title": "StatTrack: Api Key"
-      },
-      {
-        "command": "wakatime.apiurl",
-        "title": "StatTrack: Api Url"
-      }
-      
-    ],
-    "configuration": {
-      "title": "StatTrack",
-      "properties": {
-        "wakatime.apiKey": {
-          "type": "string",
-          "description": "Defaults to value from ~/.stattrack.cfg, unless running in browser.",
-          "scope": "application"
-        },
-        "wakatime.apiUrl": {
-          "type": "string",
-          "description": "Defaults to http://localhost:3000/api/v1",
-          "scope": "application"
-        }
-      }
-    }
-  },
+  }
+  ,
   "devDependencies": {
     "@types/adm-zip": "^0.4.34",
     "@types/azdata": "^1.35.0",

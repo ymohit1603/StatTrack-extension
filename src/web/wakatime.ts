@@ -493,7 +493,7 @@ export class WakaTime {
     this.logger.debug(`Sending heartbeat: ${JSON.stringify(payload)}`);
 
     const apiKey = this.config.get('wakatime.apiKey');
-    console.log(apiKey);
+    console.log(apiKey,"apiKey");
     const apiUrl = this.getApiUrl();
     console.log(apiUrl);
 

@@ -536,7 +536,7 @@ export class WakaTime {
   ): Promise<void> {
     console.log("hello")
     if (!this.dependencies.isCliInstalled()) return;
-    console.log("hello")
+    console.log("hello1")
 
 
     let file = doc.fileName;

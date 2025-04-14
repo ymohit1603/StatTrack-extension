@@ -30,3 +30,36 @@
         "command": "wakatime.log_file",
         "title": "StatTrack: Open Log File..."
       }
+
+
+
+      ,
+    "configuration": {
+      "title": "StatTrack",
+      "properties": {
+        "wakatime.apiKey": {
+          "type": "string",
+          "description": "Defaults to value from ~/.stattrack.cfg, unless running in browser.",
+          "scope": "application"
+        },
+        "wakatime.apiUrl": {
+          "type": "string",
+          "description": "Defaults to http://localhost:3000/api/v1",
+          "scope": "application"
+        }
+      }
+    }
+
+
+    "contributes": {
+    "commands": [
+      {
+        "command": "wakatime.apikey",
+        "title": "StatTrack: Api Key"
+      },
+      {
+        "command": "wakatime.apiurl",
+        "title": "StatTrack: Api Url"
+      }
+      
+    ]

@@ -40,19 +40,22 @@ export class Dependencies {
     this.options = options;
     this.logger = logger;
     this.resourcesLocation = resourcesLocation;
+    console.log("resource loc",resourcesLocation);
+    console.log(this.githubDownloadUrl)
   }
 
   public getCliLocation(): string {
-    console.log(this.cliLocation);
+    console.log("cli locationn",this.cliLocation);
     if (this.cliLocation) return this.cliLocation;
-    console.log(this.cliLocation);
+    console.log("cli loc",this.cliLocation);
 
 
     this.cliLocation = this.getCliLocationGlobal();
-    console.log(this.cliLocation);
+    console.log("cli loc1",this.cliLocation);
+
 
     if (this.cliLocation) return this.cliLocation;
-    console.log(this.cliLocation);
+    console.log("cli loc2",this.cliLocation);
 
 
     const osname = this.osName();
@@ -60,15 +63,17 @@ export class Dependencies {
     const ext = Desktop.isWindows() ? '.exe' : '';
     const binary = `stattrack-${osname}-${arch}${ext}`;
     this.cliLocation = path.join(this.resourcesLocation, binary);
-    console.log(this.cliLocation);
+    console.log("cli loc3",this.cliLocation);
     return this.cliLocation;
   }
 
   public getCliLocationGlobal(): string | undefined {
+    console.log("global",this.cliLocationGlobal);
     if (this.cliLocationGlobal) return this.cliLocationGlobal;
 
     const binaryName = `stattrack${Desktop.isWindows() ? '.exe' : ''}`;
     const path = which.sync(binaryName, { nothrow: true });
+    console.log("path",path);
     if (path) {
       this.cliLocationGlobal = path;
       this.logger.debug(`Using global stattrack location: ${path}`);
@@ -78,7 +83,7 @@ export class Dependencies {
   }
 
   public isCliInstalled(): boolean {
-    console.log(this.cliInstalled);
+    console.log("isCliInstalled",this.cliInstalled);
     if (this.cliInstalled) return true;
     this.cliInstalled = fs.existsSync(this.getCliLocation());
     return this.cliInstalled;
@@ -213,8 +218,14 @@ export class Dependencies {
 
   private installCli(callback: () => void): void {
     this.logger.debug(`Downloading stattrack from GitHub...`);
+    console.log(`Downloading stattrack from GitHub...`);
+    console.log("resourceloc",this.resourcesLocation)
+
+
     const url = this.cliDownloadUrl();
     let zipFile = path.join(this.resourcesLocation, 'stattrack' + this.randStr() + '.zip');
+    console.log("ZipFIle",zipFile)
+
     this.downloadFile(
       url,
       zipFile,
@@ -223,6 +234,7 @@ export class Dependencies {
       },
       callback,
     );
+    console.log("downloaded");
   }
 
   private isSymlink(file: string): boolean {
@@ -234,6 +246,7 @@ export class Dependencies {
 
   private extractCli(zipFile: string, callback: () => void): void {
     this.logger.debug(`Extracting stattrack into "${this.resourcesLocation}"...`);
+    console.log("extracting...")
     this.backupCli();
     this.unzip(zipFile, this.resourcesLocation, (unzipped) => {
       if (!unzipped) {
@@ -267,6 +280,7 @@ export class Dependencies {
       callback();
     });
     this.logger.debug('Finished extracting stattrack.');
+    console.log("finished extracting");
   }
 
   private backupCli() {
@@ -303,24 +317,35 @@ export class Dependencies {
           options['proxy'] = proxy.value;
         }
         if (noSSLVerify.value === 'true') options['strictSSL'] = false;
+        
         try {
-          let r = request.get(options);
-          console.log("r",r);
+          const r = request.get(options);
+          console.log("r", r);
+          
           r.on('error', (e) => {
             this.logger.warn(`Failed to download ${url}`);
+            console.log("Failed to download");
             this.logger.warn(e.toString());
-            error();
+            error(); // Handle error properly
           });
-          let out = fs.createWriteStream(outputFile);
+  
+          const out = fs.createWriteStream(outputFile);
           r.pipe(out);
+          console.log("Streaming to output file...");
+  
           r.on('end', () => {
-            out.on('finish', () => {
-              callback();
-            });
+            console.log("Download complete (r end)");
+          });
+  
+          out.on('finish', () => {
+            console.log("Download finished (out finish)");
+            callback(); // Trigger callback after download finishes
+            console.log("Callback after download");
           });
         } catch (e) {
           this.logger.warnException(e);
-          callback();
+          console.log("Error in downloading: catch block");
+          error(); // Handle error properly
         }
       });
     });
@@ -328,23 +353,41 @@ export class Dependencies {
 
   private unzip(file: string, outputDir: string, callback: (unzipped: boolean) => void): void {
     if (fs.existsSync(file)) {
+      console.log(`ZIP file exists: ${file}`);
       try {
         let zip = new adm_zip(file);
+        console.log(`Extracting to directory: ${outputDir}`);
         zip.extractAllTo(outputDir, true);
+        
+        // Check if the extraction was successful by listing the contents of the output directory
+        const extractedFiles = fs.readdirSync(outputDir);
+        console.log(`Extracted files: ${extractedFiles}`);
+  
+        // Remove the ZIP file after extraction
         fs.unlinkSync(file);
-        callback(true);
+        console.log(`ZIP file removed: ${file}`);
+        callback(true); // Indicating the unzip was successful
         return;
-      } catch (e) {
+      } catch (e:any) {
         this.logger.warnException(e);
+        console.error(`Error extracting the ZIP file: ${e.message}`);
       }
+  
+      // If extraction failed, remove the file
       try {
         fs.unlinkSync(file);
-      } catch (e2) {
+        console.log(`Failed extraction - ZIP file removed: ${file}`);
+      } catch (e2:any) {
         this.logger.warnException(e2);
+        console.error(`Error removing the ZIP file: ${e2.message}`);
       }
-      callback(false);
+      callback(false); // Indicating the unzip failed
+    } else {
+      console.error(`ZIP file not found: ${file}`);
+      callback(false); // If the ZIP file doesn't exist
     }
   }
+  
 
   private legacyReleaseTag() {
     const osname = this.osName() as osName;
@@ -380,7 +423,7 @@ export class Dependencies {
     // Use legacy stattrack-cli release to support older operating systems
     const tag = this.legacyReleaseTag();
     if (tag) {
-      return `https://github.com/ymohit1603/StatTrack-cli/releases/download/${tag}/stattrack-${osname}-${arch}.zip`;
+      return `https://github.com/ymohit1603/StatTrack-cli/releases/download/v1.0.0/stattrack-${osname}-${arch}.zip`;
     }
 
     const validCombinations = [
@@ -407,7 +450,7 @@ export class Dependencies {
     if (!validCombinations.includes(`${osname}-${arch}`))
       this.reportMissingPlatformSupport(osname, arch);
 
-    return `${this.githubDownloadUrl}/stattrack-${osname}-${arch}.zip`;
+    return `https://github.com/ymohit1603/StatTrack-cli/releases/download/v1.0.0/stattrack-${osname}-${arch}.zip`;
   }
 
   private reportMissingPlatformSupport(osname: string, architecture: string): void {

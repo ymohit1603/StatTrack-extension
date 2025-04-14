@@ -308,7 +308,7 @@ export class Options {
       return '';
     }
 
-    if (!apiUrl) {
+    if (!apiUrl) { 
       try {
         apiUrl = await this.getSettingAsync<string>('settings', 'api_url');
       } catch (err) {
@@ -324,6 +324,8 @@ export class Options {
         apiUrl = apiUrl.slice(0, -suffix.length);
       }
     }
+
+    console.log("apiUrl",apiUrl);
 
     return apiUrl;
   }
