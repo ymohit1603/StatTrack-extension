@@ -99,7 +99,7 @@ export class WakaTime {
 
   private setResourcesLocation() {
     const home = Desktop.getHomeDirectory();
-    const folder = path.join(home, '.wakatime');
+    const folder = path.join(home, '.stattrack');
 
     try {
       fs.mkdirSync(folder, { recursive: true });

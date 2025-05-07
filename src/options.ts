@@ -22,9 +22,9 @@ export class Options {
 
   constructor(logger: Logger, resourcesFolder: string) {
     this.logger = logger;
-    this.configFile = path.join(Desktop.getHomeDirectory(), '.wakatime.cfg');
-    this.internalConfigFile = path.join(resourcesFolder, 'wakatime-internal.cfg');
-    this.logFile = path.join(resourcesFolder, 'wakatime.log');
+    this.configFile = path.join(Desktop.getHomeDirectory(), '.stattrack.cfg');
+    this.internalConfigFile = path.join(resourcesFolder, 'stattrack-internal.cfg');
+    this.logFile = path.join(resourcesFolder, 'stattrack.log');
   }
 
   public async getSettingAsync<T = any>(section: string, key: string): Promise<T> {
