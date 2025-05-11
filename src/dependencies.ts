@@ -25,7 +25,9 @@ export class Dependencies {
   private cliLocation?: string = undefined;
   private cliLocationGlobal?: string = undefined;
   private cliInstalled: boolean = false;
-  private githubDownloadUrl = 'https://github.com/ymohit1603/StatTrack-cli/releases/download';
+  // private githubDownloadUrl = 'https://github.com/ymohit1603/StatTrack-cli/releases/download/v1.0.0/';
+  
+
   private githubReleasesUrl = 'https://api.github.com/repos/ymohit1603/StatTrack-cli/releases';
   private legacyOperatingSystems: {
     [key in osName]?: {
@@ -40,30 +42,33 @@ export class Dependencies {
     this.options = options;
     this.logger = logger;
     this.resourcesLocation = resourcesLocation;
-    console.log("resource loc",resourcesLocation);
-    console.log(this.githubDownloadUrl)
+    console.log(`Initializing StatTrack with resources location: ${resourcesLocation}`);
+    
+    // Ensure resources directory exists
+    if (!fs.existsSync(this.resourcesLocation)) {
+      console.log(`Creating resources directory: ${this.resourcesLocation}`);
+      fs.mkdirSync(this.resourcesLocation, { recursive: true });
+    }
   }
 
   public getCliLocation(): string {
-    console.log("cli locationn",this.cliLocation);
-    if (this.cliLocation) return this.cliLocation;
-    console.log("cli loc",this.cliLocation);
-
+    if (this.cliLocation) {
+      console.log(`Using cached CLI location: ${this.cliLocation}`);
+      return this.cliLocation;
+    }
 
     this.cliLocation = this.getCliLocationGlobal();
-    console.log("cli loc1",this.cliLocation);
-
-
-    if (this.cliLocation) return this.cliLocation;
-    console.log("cli loc2",this.cliLocation);
-
+    if (this.cliLocation) {
+      console.log(`Using global CLI location: ${this.cliLocation}`);
+      return this.cliLocation;
+    }
 
     const osname = this.osName();
     const arch = this.architecture();
     const ext = Desktop.isWindows() ? '.exe' : '';
     const binary = `stattrack-${osname}-${arch}${ext}`;
     this.cliLocation = path.join(this.resourcesLocation, binary);
-    console.log("cli loc3",this.cliLocation);
+    console.log(`Using local CLI location: ${this.cliLocation}`);
     return this.cliLocation;
   }
 
@@ -76,30 +81,59 @@ export class Dependencies {
     console.log("path",path);
     if (path) {
       this.cliLocationGlobal = path;
-      this.logger.debug(`Using global stattrack location: ${path}`);
+      console.log(`Using global stattrack location: ${path}`);
     }
 
     return this.cliLocationGlobal;
   }
 
-  public isCliInstalled(): boolean {
-    console.log("isCliInstalled",this.cliInstalled);
-    if (this.cliInstalled) return true;
-    this.cliInstalled = fs.existsSync(this.getCliLocation());
-    return this.cliInstalled;
-  }
-
   public checkAndInstallCli(callback: () => void): void {
-    if (!this.isCliInstalled()) {
-      this.installCli(callback);
-    } else {
+    console.log('Checking if StatTrack CLI is installed...');
+    
+    if (this.isCliInstalled()) {
+      console.log('StatTrack CLI is already installed, checking if it needs updates...');
       this.isCliLatest((isLatest) => {
         if (!isLatest) {
+          console.log('Update available for StatTrack CLI, installing...');
           this.installCli(callback);
         } else {
+          console.log('StatTrack CLI is up to date, no need to download.');
           callback();
         }
       });
+    } else {
+      console.log('StatTrack CLI not found, installing...');
+      this.installCli(callback);
+    }
+  }
+
+  public isCliInstalled(): boolean {
+    if (this.cliInstalled) {
+      console.log('CLI is already installed (cached state)');
+      return true;
+    }
+    
+    const cliPath = this.getCliLocation();
+    console.log(`Checking for CLI at: ${cliPath}`);
+    
+    if (fs.existsSync(cliPath)) {
+      console.log(`CLI found at: ${cliPath}`);
+      // Verify the CLI is executable
+      try {
+        fs.accessSync(cliPath, fs.constants.X_OK);
+        console.log('CLI is executable');
+        this.cliInstalled = true;
+        return true;
+      } catch (e: any) {
+        console.log(`CLI exists but is not executable: ${cliPath}`);
+        console.log(`Error: ${e.toString()}`);
+        this.cliInstalled = false;
+        return false;
+      }
+    } else {
+      console.log(`CLI not found at: ${cliPath}`);
+      this.cliInstalled = false;
+      return false;
     }
   }
 
@@ -115,7 +149,7 @@ export class Dependencies {
       child_process.execFile(this.getCliLocation(), args, options, (error, _stdout, stderr) => {
         if (!(error != null)) {
           let currentVersion = _stdout.toString().trim() + stderr.toString().trim();
-          this.logger.debug(`Current stattrack version is ${currentVersion}`);
+          console.log(`Current stattrack version is ${currentVersion}`);
 
           if (currentVersion === '<local-build>') {
             callback(true);
@@ -137,7 +171,7 @@ export class Dependencies {
               const lastAccessed = parseInt(accessed.value);
               const fourHours = 4 * 3600;
               if (lastAccessed && lastAccessed + fourHours > now) {
-                this.logger.debug(
+                console.log(
                   `Skip checking for stattrack updates because recently checked ${
                     now - lastAccessed
                   } seconds ago.`,
@@ -146,16 +180,16 @@ export class Dependencies {
                 return;
               }
 
-              this.logger.debug('Checking for updates to stattrack...');
+              console.log('Checking for updates to stattrack...');
               this.getLatestCliVersion((latestVersion) => {
                 if (currentVersion === latestVersion) {
-                  this.logger.debug('stattrack is up to date');
+                  console.log('stattrack is up to date');
                   callback(true);
                 } else if (latestVersion) {
-                  this.logger.debug(`Found an updated stattrack ${latestVersion}`);
+                  console.log(`Found an updated stattrack ${latestVersion}`);
                   callback(false);
                 } else {
-                  this.logger.debug('Unable to find latest stattrack version');
+                  console.log('Unable to find latest stattrack version');
                   callback(false);
                 }
               });
@@ -180,18 +214,18 @@ export class Dependencies {
             'User-Agent': 'github.com/ymohit1603/vscode-stattrack',
           },
         };
-        this.logger.debug(`Fetching latest stattrack version from GitHub API: ${options.url}`);
+        console.log(`Fetching latest stattrack version from GitHub API: ${options.url}`);
         if (proxy.value) {
-          this.logger.debug(`Using Proxy: ${proxy.value}`);
+          console.log(`Using Proxy: ${proxy.value}`);
           options['proxy'] = proxy.value;
         }
         if (noSSLVerify.value === 'true') options['strictSSL'] = false;
         try {
-          request.get(options, (error, response, json) => {
+          request.get(options, (error: any, response, json) => {
             if (!error && response && response.statusCode == 200) {
-              this.logger.debug(`GitHub API Response ${response.statusCode}`);
+              console.log(`GitHub API Response ${response.statusCode}`);
               const latestCliVersion = json['tag_name'];
-              this.logger.debug(`Latest stattrack version from GitHub: ${latestCliVersion}`);
+              console.log(`Latest stattrack version from GitHub: ${latestCliVersion}`);
               this.options.setSetting(
                 'internal',
                 'cli_version_last_accessed',
@@ -201,15 +235,15 @@ export class Dependencies {
               callback(latestCliVersion);
             } else {
               if (response) {
-                this.logger.warn(`GitHub API Response ${response.statusCode}: ${error}`);
+                console.log(`GitHub API Response ${response.statusCode}: ${error}`);
               } else {
-                this.logger.warn(`GitHub API Response Error: ${error}`);
+                console.log(`GitHub API Response Error: ${error}`);
               }
               callback('');
             }
           });
-        } catch (e) {
-          this.logger.warnException(e);
+        } catch (e:any) {
+          console.log(`Error in download process: ${e.toString()}`);
           callback('');
         }
       });
@@ -217,24 +251,49 @@ export class Dependencies {
   }
 
   private installCli(callback: () => void): void {
-    this.logger.debug(`Downloading stattrack from GitHub...`);
-    console.log(`Downloading stattrack from GitHub...`);
-    console.log("resourceloc",this.resourcesLocation)
-
-
+    console.log('Starting StatTrack CLI installation...');
+    
+    // Clean up any existing zip files first
+    try {
+      const files = fs.readdirSync(this.resourcesLocation);
+      files.forEach(file => {
+        if (file.startsWith('stattrack') && file.endsWith('.zip')) {
+          const filePath = path.join(this.resourcesLocation, file);
+          console.log(`Cleaning up old zip file: ${filePath}`);
+          fs.unlinkSync(filePath);
+        }
+      });
+    } catch (e: any) {
+      console.log(`Error cleaning up old zip files: ${e.toString()}`);
+    }
+    
     const url = this.cliDownloadUrl();
-    let zipFile = path.join(this.resourcesLocation, 'stattrack' + this.randStr() + '.zip');
-    console.log("ZipFIle",zipFile)
-
+    const zipFile = path.join(this.resourcesLocation, 'stattrack' + this.randStr() + '.zip');
+    
+    console.log(`Download URL: ${url}`);
+    console.log(`Target zip file: ${zipFile}`);
+    
     this.downloadFile(
       url,
       zipFile,
       () => {
+        console.log('Download completed, starting extraction...');
         this.extractCli(zipFile, callback);
       },
-      callback,
+      () => {
+        console.log('Failed to download StatTrack CLI');
+        // Clean up the zip file if download fails
+        try {
+          if (fs.existsSync(zipFile)) {
+            fs.unlinkSync(zipFile);
+            console.log(`Cleaned up failed download: ${zipFile}`);
+          }
+        } catch (e: any) {
+          console.log(`Error cleaning up failed download: ${e.toString()}`);
+        }
+        callback();
+      }
     );
-    console.log("downloaded");
   }
 
   private isSymlink(file: string): boolean {
@@ -245,42 +304,62 @@ export class Dependencies {
   }
 
   private extractCli(zipFile: string, callback: () => void): void {
-    this.logger.debug(`Extracting stattrack into "${this.resourcesLocation}"...`);
-    console.log("extracting...")
+    console.log(`Extracting StatTrack CLI to "${this.resourcesLocation}"...`);
+    
     this.backupCli();
     this.unzip(zipFile, this.resourcesLocation, (unzipped) => {
       if (!unzipped) {
+        console.log('Failed to extract StatTrack CLI');
         this.restoreCli();
-      } else if (!Desktop.isWindows()) {
+        callback();
+        return;
+      }
+
+      if (!Desktop.isWindows()) {
         this.removeCli();
         const cli = this.getCliLocation();
         try {
-          this.logger.debug('Chmod 755 stattrack...');
+          console.log('Setting executable permissions...');
           fs.chmodSync(cli, 0o755);
-        } catch (e) {
-          this.logger.warnException(e);
+          console.log('Executable permissions set successfully');
+        } catch (e: any) {
+          console.log(`Failed to set executable permissions: ${e.toString()}`);
         }
+
         const ext = Desktop.isWindows() ? '.exe' : '';
         const link = path.join(this.resourcesLocation, `stattrack${ext}`);
+        
         if (!this.isSymlink(link)) {
           try {
-            this.logger.debug(`Create symlink from stattrack to ${cli}`);
+            console.log(`Creating symlink from stattrack to ${cli}`);
             fs.symlinkSync(cli, link);
-          } catch (e) {
-            this.logger.warnException(e);
+            console.log('Symlink created successfully');
+          } catch (e: any) {
+            console.log(`Failed to create symlink: ${e.toString()}`);
             try {
+              console.log('Attempting to copy file instead of symlink');
               fs.copyFileSync(cli, link);
               fs.chmodSync(link, 0o755);
-            } catch (e2) {
-              this.logger.warnException(e2);
+              console.log('File copied successfully');
+            } catch (e2: any) {
+              console.log(`Failed to copy file: ${e2.toString()}`);
             }
           }
         }
       }
+
+      try {
+        console.log('Cleaning up zip file...');
+        fs.unlinkSync(zipFile);
+        console.log('Zip file removed successfully');
+      } catch (e: any) {
+        console.log(`Failed to remove zip file: ${e.toString()}`);
+      }
+
+      this.cliInstalled = true;
+      console.log('StatTrack CLI installation completed successfully');
       callback();
     });
-    this.logger.debug('Finished extracting stattrack.');
-    console.log("finished extracting");
   }
 
   private backupCli() {
@@ -309,48 +388,89 @@ export class Dependencies {
     callback: () => void,
     error: () => void,
   ): void {
+    console.log(`Starting download from: ${url}`);
     this.options.getSetting('settings', 'proxy', false, (proxy: Setting) => {
       this.options.getSetting('settings', 'no_ssl_verify', false, (noSSLVerify: Setting) => {
-        let options = { url: url };
+        let options: any = { 
+          url: url,
+          timeout: 30000, // 30 second timeout
+          headers: {
+            'User-Agent': 'StatTrack-VSCode-Extension'
+          }
+        };
         if (proxy.value) {
-          this.logger.debug(`Using Proxy: ${proxy.value}`);
+          console.log(`Using Proxy: ${proxy.value}`);
           options['proxy'] = proxy.value;
         }
         if (noSSLVerify.value === 'true') options['strictSSL'] = false;
-        
+
         try {
+          console.log('Initiating download request...');
           const r = request.get(options);
-          console.log("r", r);
           
-          r.on('error', (e) => {
-            this.logger.warn(`Failed to download ${url}`);
-            console.log("Failed to download");
-            this.logger.warn(e.toString());
-            error(); // Handle error properly
+          r.on('response', (response) => {
+            console.log(response)
+            console.log(`Response status: ${response.statusCode}`);
+            console.log(`Response headers: ${JSON.stringify(response.headers)}`);
+            
+            const totalSize = parseInt(response.headers['content-length'] || '0', 10);
+            let downloaded = 0;
+            let lastProgressUpdate = Date.now();
+
+            if (!isNaN(totalSize) && totalSize > 0) {
+              console.log(`Total download size: ${totalSize} bytes`);
+
+              r.on('data', (chunk) => {
+                downloaded += chunk.length;
+                const percent = ((downloaded / totalSize) * 100).toFixed(2);
+                const progressBarLength = 20;
+                const filledLength = Math.round((progressBarLength * downloaded) / totalSize);
+                const progressBar = '█'.repeat(filledLength) + '░'.repeat(progressBarLength - filledLength);
+                
+                // Update progress every 500ms to avoid flooding the output
+                const now = Date.now();
+                if (now - lastProgressUpdate >= 500) {
+                  console.log(`Downloading: [${progressBar}] ${percent}% (${downloaded}/${totalSize} bytes)`);
+                  lastProgressUpdate = now;
+                }
+              });
+            } else {
+              console.log('Unable to determine file size (Content-Length missing)');
+            }
           });
-  
+
+          r.on('error', (e: any) => {
+            console.log(`Failed to download ${url}: ${e.toString()}`);
+            console.log('Error details:', e);
+            error();
+          });
+
           const out = fs.createWriteStream(outputFile);
           r.pipe(out);
-          console.log("Streaming to output file...");
-  
+
           r.on('end', () => {
-            console.log("Download complete (r end)");
+            console.log('Download completed');
           });
-  
+
           out.on('finish', () => {
-            console.log("Download finished (out finish)");
-            callback(); // Trigger callback after download finishes
-            console.log("Callback after download");
+            console.log(`File saved to: ${outputFile}`);
+            callback();
           });
-        } catch (e) {
-          this.logger.warnException(e);
-          console.log("Error in downloading: catch block");
-          error(); // Handle error properly
+
+          out.on('error', (e: any) => {
+            console.log(`Write stream error for ${outputFile}: ${e.toString()}`);
+            console.log('Error details:', e);
+            error();
+          });
+        } catch (e: any) {
+          console.log(`Error in download process: ${e.toString()}`);
+          console.log('Error details:', e);
+          error();
         }
       });
     });
   }
-
+  
   private unzip(file: string, outputDir: string, callback: (unzipped: boolean) => void): void {
     if (fs.existsSync(file)) {
       console.log(`ZIP file exists: ${file}`);
@@ -369,7 +489,6 @@ export class Dependencies {
         callback(true); // Indicating the unzip was successful
         return;
       } catch (e:any) {
-        this.logger.warnException(e);
         console.error(`Error extracting the ZIP file: ${e.message}`);
       }
   
@@ -378,7 +497,6 @@ export class Dependencies {
         fs.unlinkSync(file);
         console.log(`Failed extraction - ZIP file removed: ${file}`);
       } catch (e2:any) {
-        this.logger.warnException(e2);
         console.error(`Error removing the ZIP file: ${e2.message}`);
       }
       callback(false); // Indicating the unzip failed
@@ -447,8 +565,10 @@ export class Dependencies {
       'windows-amd64',
       'windows-arm64',
     ];
+    console.log("osname",osname)
     if (!validCombinations.includes(`${osname}-${arch}`))
       this.reportMissingPlatformSupport(osname, arch);
+    console.log("arch",arch)
 
     return `https://github.com/ymohit1603/StatTrack-cli/releases/download/v1.0.0/stattrack-${osname}-${arch}.zip`;
   }
@@ -472,5 +592,6 @@ export class Dependencies {
   }
 }
   
+
 
 

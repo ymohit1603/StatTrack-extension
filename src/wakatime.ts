@@ -58,7 +58,7 @@ export class WakaTime {
     this.extensionPath = extensionPath;
     this.logger = logger;
     this.setResourcesLocation();
-    this.options = new Options(logger, this.resourcesLocation);
+    this.options = new Options(this.resourcesLocation, logger);
   }
 
   public initialize(): void {
@@ -230,6 +230,7 @@ export class WakaTime {
       validateInput: Utils.apiKeyInvalid.bind(this),
     };
     vscode.window.showInputBox(promptOptions).then((val) => {
+      console.log(val,"val");
       if (val != undefined) {
         let invalid = Utils.apiKeyInvalid(val);
         if (!invalid) {
@@ -582,76 +583,22 @@ export class WakaTime {
     const folder = this.getProjectFolder(doc.uri);
     if (folder) args.push('--project-folder', Utils.quote(folder));
 
-    if (isWrite) args.push('--write');
+    // Always pass the config file, not just on Windows
+    args.push('--config', Utils.quote(this.options.getConfigFile(false)));
+    args.push('--log-file', Utils.quote(this.options.getLogFile()));
 
-    if (Desktop.isWindows() || Desktop.isPortable()) {
-      args.push(
-        '--config',
-        Utils.quote(this.options.getConfigFile(false)),
-        '--log-file',
-        Utils.quote(this.options.getLogFile()),
-      );
-    }
+    if (isWrite) args.push('--write');
 
     if (doc.isUntitled) args.push('--is-unsaved-entity');
 
     const binary = this.dependencies.getCliLocation();
-    console.log("binary",binary);
     this.logger.debug(`Sending heartbeat: ${Utils.formatArguments(binary, args)}`);
     const options = Desktop.buildOptions();
-    let proc = child_process.execFile(binary, args, options, (error, stdout, stderr) => {
+    child_process.execFile(binary, args, options, (error, stdout, stderr) => {
       if (error != null) {
-        console.log("err")
-        if (stderr && stderr.toString() != '') this.logger.error(stderr.toString());
-        if (stdout && stdout.toString() != '') this.logger.error(stdout.toString());
+        if (stderr && stderr.toString() !== '') this.logger.error(stderr.toString());
+        if (stdout && stdout.toString() !== '') this.logger.error(stdout.toString());
         this.logger.error(error.toString());
-      }
-    });
-    proc.on('close', async (code, _signal) => {
-      if (code == 0) {
-        console.log("e")
-        if (this.showStatusBar) this.getCodingActivity();
-      } else if (code == 102 || code == 112) {
-        console.log("el")
-        if (this.showStatusBar) {
-          if (!this.showCodingActivity) this.updateStatusBarText();
-          this.updateStatusBarTooltip(
-            'StatTrack: working offline... coding activity will sync next time we are online',
-          );
-        }
-        this.logger.warn(
-          `Working offline (${code}); Check your ${this.options.getLogFile()} file for more details`,
-        );
-      } else if (code == 103) {
-        console.log("1 else if")
-        let error_msg = `Config parsing error (103); Check your ${this.options.getLogFile()} file for more details`;
-        if (this.showStatusBar) {
-          this.updateStatusBarText('StatTrac Error');
-          this.updateStatusBarTooltip(`StatTrack: ${error_msg}`);
-        }
-        this.logger.error(error_msg);
-      } else if (code == 104) {
-        console.log("else if")
-        let error_msg = 'Invalid Api Key (104); Make sure your Api Key is correct!';
-        if (this.showStatusBar) {
-          this.updateStatusBarText('StatTrack Error');
-          this.updateStatusBarTooltip(`StatTrack: ${error_msg}`);
-        }
-        this.logger.error(error_msg);
-        let now: number = Date.now();
-        if (this.lastApiKeyPrompted < now - 86400000) {
-          // only prompt once per day
-          await this.promptForApiKey(false);
-          this.lastApiKeyPrompted = now;
-        }
-      } else {
-        console.log("final")
-        let error_msg = `Unknown Error (${code}); Check your ${this.options.getLogFile()} file for more details`;
-        if (this.showStatusBar) {
-          this.updateStatusBarText('StatTrack Error');
-          this.updateStatusBarTooltip(`StatTrack: ${error_msg}`);
-        }
-        this.logger.error(error_msg);
       }
     });
   }
@@ -730,9 +677,7 @@ export class WakaTime {
               if (jsonData?.text) {
                 if (this.showCodingActivity) {
                   this.updateStatusBarText(jsonData.text.trim());
-                  this.updateStatusBarTooltip(
-                    'StatTrack: Today’s coding time. Click to visit dashboard.',
-                  );
+                  this.updateStatusBarTooltip("StatTrack: Today's coding time. Click to visit dashboard.");
                 } else {
                   this.updateStatusBarText();
                   this.updateStatusBarTooltip(jsonData.text.trim());
@@ -789,7 +734,7 @@ export class WakaTime {
       return;
     }
 
-    let user_agent =
+    let user_agent = 
       this.agentName + '/' + vscode.version + ' vscode-stattrack/' + this.extension.version;
     let args = ['--output', 'json', '--plugin', Utils.quote(user_agent)];
 
@@ -896,7 +841,7 @@ export class WakaTime {
     if (other) {
       this.updateTeamStatusBarTextForOther(other.user.name + ': ' + other.total.text);
       this.updateStatusBarTooltipForOther(
-        other.user.long_name + '’s total time spent in this file',
+        other.user.long_name + 's total time spent in this file',
       );
     } else {
       this.updateTeamStatusBarTextForOther();

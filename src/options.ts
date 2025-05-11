@@ -16,15 +16,17 @@ export interface Setting {
 export class Options {
   private configFile: string;
   private internalConfigFile: string;
+  private resourcesLocation: string;
   private logFile: string;
   private logger: Logger;
-  private cache: any = {};
+  private cache: { [key: string]: any } = {};
 
-  constructor(logger: Logger, resourcesFolder: string) {
+  constructor(resourcesLocation: string, logger: Logger) {
+    this.resourcesLocation = resourcesLocation;
     this.logger = logger;
     this.configFile = path.join(Desktop.getHomeDirectory(), '.stattrack.cfg');
-    this.internalConfigFile = path.join(resourcesFolder, 'stattrack-internal.cfg');
-    this.logFile = path.join(resourcesFolder, 'stattrack.log');
+    this.internalConfigFile = path.join(this.resourcesLocation, '.stattrack.cfg');
+    this.logFile = path.join(this.resourcesLocation, 'stattrack.log');
   }
 
   public async getSettingAsync<T = any>(section: string, key: string): Promise<T> {
@@ -195,7 +197,10 @@ export class Options {
   }
 
   public getConfigFile(internal: boolean): string {
-    return internal ? this.internalConfigFile : this.configFile;
+    if (internal) {
+      return path.join(this.resourcesLocation, '.stattrack.cfg');
+    }
+    return path.join(Desktop.getHomeDirectory(), '.stattrack.cfg');
   }
 
   public getLogFile(): string {
